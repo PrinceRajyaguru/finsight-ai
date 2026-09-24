@@ -75,3 +75,13 @@ Three more issues surfaced once the app was actually run locally (outside the sa
 3. **Stale API key in the running Streamlit server.** Streamlit caches environment/module state across reruns within a session, so a `.env` edit doesn't take effect until the server is restarted, not just the page refreshed.
 
 Confirmed end-to-end: the live app now produces the Holt-Winters forecast, the Groq narrative, the plan-vs-actual table and the sector comparison correctly.
+
+## Decision 11: Visual polish pass
+
+The working app's default chart (Streamlit's built-in `st.line_chart`) rendered with garbled/truncated y-axis tick labels in practice - a real cosmetic bug, not just a matter of taste, worth fixing regardless of how the page is otherwise received. Root cause: its default number formatting isn't controllable per-chart, so it's a poor fit once axis space gets tight.
+
+Replaced it with an explicit Altair chart (already a Streamlit dependency, so no new install cost) built against this project's own data-viz standard: two-series identity carried by a legend (never color-only), explicit `.0f` axis formatting (no auto k/M truncation), 2px lines with visible end markers, a hover tooltip per point, and sparing direct end-labels only on the last actual point and the two forecast points - not a label on every point, which would be noise. Colors are fixed and assigned by role (blue = real/actual, orange = modeled/forecast), not auto-cycled.
+
+Also added a KPI stat-tile row at the top (last actual quarter, next-quarter forecast + YoY, model MAPE, FY2025 growth vs. sector) so the headline numbers are visible before scrolling, moved the page to a wide layout to give the chart more room, and switched the AI narrative to a highlighted `st.info` block so it reads as the analytical centerpiece rather than plain text.
+
+This was a separate pass from the substance of the project (data, model, integration) - the chart bug and the plain layout were legitimate presentation issues worth fixing on their own, independent of whether the underlying work was sound.
